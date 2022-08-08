@@ -182,4 +182,75 @@ class PlotMTCM():
 
         fig.show()
 
-    
+        # Plot discretized MTCM
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_el_miso_list,
+            y=self.sigma_sr_pl_miso_list,
+            name="Elastic strains"
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_pl_miso_list,
+            y=self.sigma_sr_pl_miso_list,
+            name="Plastic strains"
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_m_miso,
+            y=self.sigma_sr_miso,
+            name="Total strains"
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_m_vector,
+            y=self.sigma_sr_naked_steel,
+            name="Naked steel"
+        ))
+
+        fig.update_layout(
+            title="Discretized stress vs. Strain for MTCM MISO",
+            xaxis_title=u"$\u03B5 [‰]$",
+            yaxis_title=u"$\u03C3_{sr} [MPa]$",
+            template='plotly_dark',
+            xaxis_range=[0,1.5*max(self.eps_m_vector)],
+        )
+
+        fig.show()
+
+        # Plot mean strains vs. crack widths
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_m_vector,
+            y=self.wcr_mtcm,
+        ))
+
+        fig.update_layout(
+            title="Crack widths",
+            xaxis_title=u"$w [mm]$",
+            yaxis_title=u"$\u03C3_{sr} [MPa]$",
+            template='plotly_dark',
+            xaxis_range=[0,self.fs_yield/self.Es],
+        )
+
+        fig.show()
+
+        # Plot mean strains vs. transfer length
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_m_vector,
+            y=self.scr_mtcm,
+        ))
+
+        fig.update_layout(
+            title="Transfer lengths",
+            xaxis_title=u"$L_{t} [mm]$",
+            yaxis_title=u"$\u03C3_{sr} [MPa]$",
+            template='plotly_dark',
+            xaxis_range=[0,self.fs_yield/self.Es],
+        )
+
+        fig.show()
