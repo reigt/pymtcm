@@ -101,7 +101,7 @@ class PlotMTCM():
         mtmc_bar = mtcm(
             self.As_tot,self.n_phi_s,self.phi_s,self.rho_s,
             self.Es,self.Ecm,self.fctm,self.Lc,self.fs_yield,self.fs_ult,self.eps_ult,
-            self.zeta,self.psi,self.u1,self.tau_max,self.alpha,self.beta_sm
+            self.zeta,self.psi,self.u1,self.tau_max,self.alpha
         )
         
         # Calculate stresses
@@ -145,6 +145,39 @@ class PlotMTCM():
             xaxis_title=u"$\u03B5_{m}$",
             yaxis_title=u"$\u03C3_{sr} [MPa]$",
             template='plotly_dark',
+        )
+
+        fig.show()
+
+    def plot_miso(self):
+        
+        # Plot MTCM
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_m_vector,
+            y=self.sigma_sr_mtcm_strain,
+            name="MTCM"
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_m_vector,
+            y=self.sigma_sr_naked_steel,
+            name="Naked steel"
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=self.eps_m_miso,
+            y=self.sigma_sr_miso,
+            name="MISO"
+        ))
+
+        fig.update_layout(
+            title="Stress vs. Strain MTCM MISO",
+            xaxis_title=u"$\u03B5 [‰]$",
+            yaxis_title=u"$\u03C3_{sr} [MPa]$",
+            template='plotly_dark',
+            xaxis_range=[0,1.5*max(self.eps_m_vector)],
         )
 
         fig.show()
