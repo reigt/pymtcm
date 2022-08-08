@@ -1,3 +1,4 @@
+"""Python interface for mtcm."""
 # Import classes
 from .solvers import mtcm
 from .visualization import PlotMTCM
