@@ -84,7 +84,7 @@ class PlotMTCM():
             
             print(f'ERROR: The RC tie is in "{self.condition} condition". Plot of chord distributions is only possible for Regime 1, i.e. for tensile stresses at crack below yielding. ')
         
-    def stress_from_strain(self,
+    def stress_vs_strain(self,
         eps_m_max: float = 3.0*1e-3,
         eps_m_min: float = 0*1e-3,
         show_stress_from_calc: bool = False,
