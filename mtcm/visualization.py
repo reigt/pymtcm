@@ -99,8 +99,8 @@ class PlotMTCM():
         
         # Instantiate object
         mtmc_bar = mtcm(
-            self.Lc,self.As_tot,self.n_phi_s,self.phi_s,self.rho_s,
-            self.Es,self.Ecm,self.fctm,self.fs_yield,self.fs_ult,self.eps_ult,
+            self.As_tot,self.n_phi_s,self.phi_s,self.rho_s,
+            self.Es,self.Ecm,self.fctm,self.Lc,self.fs_yield,self.fs_ult,self.eps_ult,
             self.zeta,self.psi,self.u1,self.tau_max,self.alpha,self.beta_sm
         )
         

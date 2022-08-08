@@ -9,7 +9,6 @@ from math import sqrt as sqrt
 class mtcm():
     
     def __init__(self,
-        Lc: float,
         As_tot: float,
         n_phi_s: float,
         phi_s: float,
@@ -17,9 +16,10 @@ class mtcm():
         Es: float,
         Ecm: float,
         fctm: float,
+        Lc: float=10000,
         fs_yield: float=500,
         fs_ult: float=640,
-        eps_ult: float=100e-03,
+        eps_ult: float=100e-3,
         zeta: float=1.0,
         psi: float=0.70,
         u1: float=0.1,
@@ -31,7 +31,6 @@ class mtcm():
         
         Args:    
             eps_sr: steel strain at the crack, e.g. sigma_sr/Es = 2.0*1e-3
-            Lc: Uncracked length of member [mm]
             As_tot: Total steel rebar area [mm2]
             n_phi_s: Number of reinforcing steel bars 
             phi_s: Steel rebar diameter [mm] 
@@ -41,6 +40,7 @@ class mtcm():
             fctm: Tensile strength [MPa]
         
         Kwargs:
+            Lc: Uncracked length of member [mm]
             zeta: MTCM parameter related to uniform bond stresses, default is 1.0 
             psi: MTCM parameter related to ratio between strains at rebar level 
                 and the mean strains over the cover, default is 0.7
