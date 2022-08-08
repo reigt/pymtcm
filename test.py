@@ -2,10 +2,8 @@ import mtcm
 
 from math import pi as pi
 
-from mtcm.visualization import PlotMTCM
-
 # Input
-sigma_sr = 150 # MPa
+sigma_sr = 250 # MPa
 Lc = 5000 # mm
 hc = 300 # mm
 wc = 1000 # mm
@@ -24,18 +22,19 @@ hc_ef = min([2.5*(cover+phi_s/2), hc/2])
 rho_s = As_tot/(wc*hc_ef)
 
 # MTCM stress
-test = mtcm.mtcm()
-test.stress(eps_sr,Lc,As_tot,n_phi_s,phi_s,rho_s,Es,Ecm,fctm)
+test = mtcm.mtcm(Lc,As_tot,n_phi_s,phi_s,rho_s,Es,Ecm,fctm)
+test.stress(eps_sr)
 
 # MTCM strain
-test2 = mtcm.mtcm()
-test2.strain(test.eps_sm,Lc,As_tot,n_phi_s,phi_s,rho_s,Es,Ecm,fctm)
+test2 = mtcm.mtcm(Lc,As_tot,n_phi_s,phi_s,rho_s,Es,Ecm,fctm)
+test2.strain(test.eps_sm)
 
 # Plotting
-# plot_test = PlotMTCM(test)
+# plot_test = mtcm.PlotMTCM(test)
 # plot_test.chord_distribution()
-# plot_test2 = PlotMTCM(test2)
-# plot_test2.chord_distribution()
+plot_test2 = mtcm.PlotMTCM(test2)
+plot_test2.chord_distribution()
+plot_test2.stress_from_strain()
 
 # Print results
 results_test = {
