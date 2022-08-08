@@ -10,7 +10,7 @@ author = "Reignard Tan"
 author-email = "reignard.tan@multiconsult.no"
 home-page = "https://github.com/reigt/mtcm"
 description-file = "README.md"
-requires-python = ">=3.10.5"
+requires-python = ">=3.10"
 requires = [
     "numpy>=1.22.4",
     "pandas>=1.4.2",
