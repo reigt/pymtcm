@@ -169,7 +169,8 @@ class mtcm():
         ):
         """Method for calculating cracks based on imposed mean strains in a member
         
-        eps_m: mean imposed strain for the member, e.g. from shrinkage or temperature loads
+        Args:
+            eps_m: mean imposed strain for the member, e.g. from shrinkage or temperature loads
         """
         
         L_calc = self.Lc

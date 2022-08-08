@@ -87,6 +87,7 @@ class PlotMTCM():
     def stress_from_strain(self,
         eps_m_max: float = 3.0*1e-3,
         eps_m_min: float = 0*1e-3,
+        show_stress_from_calc: bool = False,
     ):
         
         # Instantiate object
@@ -124,6 +125,13 @@ class PlotMTCM():
             y=sigma_sr_nakedsteel,
             name="Naked steel"
         ))
+        
+        if show_stress_from_calc:
+            fig.add_trace(go.Scatter(
+                x=[self.eps_sm],
+                y=[self.sigma_sr],
+                name="Stress level"
+            ))
 
         fig.update_layout(
             title="Stress vs. Strain",
