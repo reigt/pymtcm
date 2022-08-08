@@ -7,10 +7,20 @@ from math import sqrt as sqrt
 from math import factorial as factorial
 
 def CLLM(eps_sr,delta,gamma,beta,xi,psi,Lc,tau_max,u1,alpha):
-    """
-    Function comparatively lightly loaded member behaviour
+    """Function comparatively lightly loaded member behaviour
     
-    Syntax: CLLM(eps_sr,delta,gamma,beta,xi,psi,Lc,tau_max,u1,alpha)
+    Args:    
+        eps_sr: steel strain at the crack, e.g. sigma_sr/Es = 2.0*1e-3
+        delta: Eq. (41)
+        gamma: Eq. (37)
+        beta: Eq. (36)
+        xi: Eq. (27)
+        psi: MTCM parameter related to ratio between strains at rebar level 
+            and the mean strains over the cover, default is 0.7
+        Lc: Uncracked length of member [mm]
+        tau_max: MTCM bond slip parameter [MPa], default is 5.0
+        u1: MTCM bond slip parameter [mm], default is 0.1
+        alpha: MTCM bond slip parameter, default is 0.35
     """
     
     # Parameters
@@ -56,12 +66,9 @@ def CLLM(eps_sr,delta,gamma,beta,xi,psi,Lc,tau_max,u1,alpha):
         
 def CLLM_yield(eps_m,L,phi_s,rho_s,Es,Ecm,Esh,alpha_E,delta,gamma,beta,
                fs_yield,tau_max,u1,alpha):
+    """Function for yielding of comparatively lightly loaded member behaviour
     
-    """
-    Function for yielding of comparatively lightly loaded member behaviour
-    
-    Syntax: CLLM(eps_m,L,phi_s,rho_s,Es,Ecm,Esh,alpha_E,delta,gamma,beta,
-                 fs_yield,tau_max,u1,alpha)
+    Args:
     """
     
     xr = (1/delta)*(fs_yield/Es*(1/(2*gamma))**(1/(2*delta)))**(2*delta/beta)
@@ -91,10 +98,21 @@ def CLLM_yield(eps_m,L,phi_s,rho_s,Es,Ecm,Esh,alpha_E,delta,gamma,beta,
     return (eps_sr, wcr)
         
 def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
-    """
-    Function comparatively heavily loaded member behaviour
+    """Function comparatively heavily loaded member behaviour
     
-    Syntax: CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha)
+    Args:    
+        eps_sr: steel strain at the crack, e.g. sigma_sr/Es = 2.0*1e-3
+        L: Member length [mm]
+        delta: Eq. (41)
+        gamma: Eq. (37)
+        beta: Eq. (36)
+        eps_sr_cr: Eq. (74) Cracking strain at the end of transfer length
+        psi: MTCM parameter related to ratio between strains at rebar level 
+            and the mean strains over the cover, default is 0.7
+        tau_max: MTCM bond slip parameter [MPa], default is 5.0
+        u1: MTCM bond slip parameter [mm], default is 0.1
+        alpha: MTCM bond slip parameter, default is 0.35
+        xcr0: Crack spacing [mm]
     """
     
     udCASE = (eps_sr**2/(4*gamma))**(1/beta)                                    # Eq. (62) or Eq. (69)
@@ -284,16 +302,16 @@ def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
     return (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list)
 
 def nakedsteel(eps_m,Es,fs_yield=500,fs_ult=640,eps_ult=100e-03):
-    """
-    Function for naked steel
+    """Bilinear material model for naked steel
     
-    Syntax: nakedsteel(eps_m,Es,fs_yield,fs_ult,eps_ult)
+    Args:
+        eps_m: steel strain at the crack, e.g. sigma_sr/Es = 2.0*1e-3
     
-    eps_m: steel strain at the crack, e.g. sigma_sr/Es = 2.0*1e-3
-    Es: Youngs Modulus for steel [MPa]
-    fs_yield: Steel stress at yielding
-    fs_ult: Steel stress at ultimate strength [MPa]
-    eps_ult: Steel strain at ultimate strength
+    Kwargs:
+        Es: Youngs Modulus for steel [MPa]
+        fs_yield: Steel stress at yielding
+        fs_ult: Steel stress at ultimate strength [MPa]
+        eps_ult: Steel strain at ultimate strength
     """ 
     
     Esh = (fs_ult-fs_yield)/(eps_ult-fs_yield/Es)
@@ -312,3 +330,26 @@ def nakedsteel(eps_m,Es,fs_yield=500,fs_ult=640,eps_ult=100e-03):
         eps_sr = sigma_sr/Es
             
     return (sigma_sr, sigma_sm, eps_sr)
+
+def prestressingsteel(eps_m,eps_p0,Ep,fp_yield,fp_ult,eps_p_ult):
+    """Bilinear material model for prestressing steel
+    
+    Args:    
+        eps_m: steel strain at the crack, e.g. sigma_sr/Es = 2.0*1e-3
+        Es: Youngs Modulus for steel [MPa]
+        fp_yield: Steel stress at yielding
+        fp_ult: Steel stress at ultimate strength [MPa]
+        eps_p_ult: Steel strain at ultimate strength
+    """ 
+    
+    eps_p = eps_m+eps_p0
+    Eph = (fp_ult-fp_yield)/(eps_p_ult-fp_yield/Ep)
+
+    if abs(eps_p) <= fp_yield/Ep:
+        sigma_pm = Ep*eps_m
+        sigma_pr = Ep*eps_p
+    elif abs(eps_p) > fp_yield/Ep:
+        sigma_pm = (fp_yield/Ep-eps_p0)*Ep+((eps_p0+eps_m)-fp_yield/Ep)*Eph      
+        sigma_pr = fp_yield+Eph*(eps_m-fp_yield/Ep)
+        
+    return (sigma_pm, sigma_pr, eps_p)

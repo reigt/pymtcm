@@ -31,7 +31,7 @@ class mtcm():
         
         Args:    
             eps_sr: steel strain at the crack, e.g. sigma_sr/Es = 2.0*1e-3
-            Lc: Member length [mm]
+            Lc: Uncracked length of member [mm]
             As_tot: Total steel rebar area [mm2]
             n_phi_s: Number of reinforcing steel bars 
             phi_s: Steel rebar diameter [mm] 
