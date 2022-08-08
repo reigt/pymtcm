@@ -89,6 +89,13 @@ class PlotMTCM():
         eps_m_min: float = 0*1e-3,
         show_stress_from_calc: bool = False,
     ):
+        """Method for plotting stress vs. strain 
+        
+        Kwargs:
+            eps_m_max: Maximum mean strain to plot, deafult is 3.0*1e-3
+            eps_m_min: Minimum mean strain to plot, default is 0
+            show_stress_from_calc: Show corresponding stress to a mean strain from a calculation, default is False
+        """
         
         # Instantiate object
         mtmc_bar = mtcm(
