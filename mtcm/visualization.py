@@ -88,6 +88,8 @@ class PlotMTCM():
         eps_m_max: float = 3.0*1e-3,
         eps_m_min: float = 0*1e-3,
         show_stress_from_calc: bool = False,
+        add_crack_width_plot: bool = False,
+        add_transfer_length_plot: bool = False,
     ):
         """Method for plotting stress vs. strain 
         
@@ -107,12 +109,16 @@ class PlotMTCM():
         # Calculate stresses
         eps_m = np.linspace(eps_m_min,eps_m_max)
         sigma_sr_mtcm = []
+        wcr_mtcm = []
+        scr_mtcm = []
         sigma_sr_nakedsteel = []
         for eps in eps_m:
             
             # MTCM
             mtmc_bar.strain(eps)
             sigma_sr_mtcm.append(mtmc_bar.sigma_sr)
+            wcr_mtcm.append(mtmc_bar.wcr)
+            scr_mtcm.append(mtmc_bar.Lt)
             
             # Naked steel
             (sigma_sr, sigma_sm, eps_sr) = functions.nakedsteel(eps,self.Es,self.fs_yield,self.fs_ult,self.eps_ult)
@@ -142,12 +148,52 @@ class PlotMTCM():
 
         fig.update_layout(
             title="Stress vs. Strain",
-            xaxis_title=u"$\u03B5_{m}$",
+            xaxis_title=u"$\u03B5_{m} [‰]$",
             yaxis_title=u"$\u03C3_{sr} [MPa]$",
             template='plotly_dark',
         )
 
         fig.show()
+
+        # Plot mean strains vs. crack widths
+        if add_crack_width_plot:
+            
+            fig = go.Figure()
+
+            fig.add_trace(go.Scatter(
+                x=eps_m,
+                y=wcr_mtcm,
+            ))
+
+            fig.update_layout(
+                title="Crack widths",
+                xaxis_title=u"$\u03B5_m [‰]$",
+                yaxis_title=u"$w [mm]$",
+                template='plotly_dark',
+                xaxis_range=[0,self.fs_yield/self.Es],
+            )
+
+            fig.show()
+
+        # Plot mean strains vs. transfer length
+        if add_transfer_length_plot:
+            
+            fig = go.Figure()
+
+            fig.add_trace(go.Scatter(
+                x=eps_m,
+                y=scr_mtcm,
+            ))
+
+            fig.update_layout(
+                title="Transfer lengths",
+                xaxis_title=u"$\u03B5_m [‰]$",
+                yaxis_title=u"$2L_{t} [mm]$",
+                template='plotly_dark',
+                xaxis_range=[0,self.fs_yield/self.Es],
+            )
+
+            fig.show()
 
     def plot_miso(self):
         
@@ -229,8 +275,8 @@ class PlotMTCM():
 
         fig.update_layout(
             title="Crack widths",
-            xaxis_title=u"$w [mm]$",
-            yaxis_title=u"$\u03C3_{sr} [MPa]$",
+            xaxis_title=u"$\u03B5 [‰]$",
+            yaxis_title=u"$w [mm]$",
             template='plotly_dark',
             xaxis_range=[0,self.fs_yield/self.Es],
         )
@@ -247,8 +293,8 @@ class PlotMTCM():
 
         fig.update_layout(
             title="Transfer lengths",
-            xaxis_title=u"$L_{t} [mm]$",
-            yaxis_title=u"$\u03C3_{sr} [MPa]$",
+            xaxis_title=u"$\u03B5 [‰]$",
+            yaxis_title=u"$2L_{t} [mm]$",
             template='plotly_dark',
             xaxis_range=[0,self.fs_yield/self.Es],
         )
