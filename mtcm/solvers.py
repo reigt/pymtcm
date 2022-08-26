@@ -159,6 +159,7 @@ class mtcm():
         self.eps_sm = eps_sm
         self.eps_cm = eps_cm
         self.xcr0 = xcr0
+        self.sigma_sr = eps_sr*self.Es
         self.Lt = Lt
         self.wcr = wcr
         

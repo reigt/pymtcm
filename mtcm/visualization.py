@@ -87,7 +87,6 @@ class PlotMTCM():
     def stress_vs_strain(self,
         eps_m_max: float = 3.0*1e-3,
         eps_m_min: float = 0*1e-3,
-        show_stress_from_calc: bool = False,
         add_crack_width_plot: bool = False,
         add_transfer_length_plot: bool = False,
     ):
@@ -139,12 +138,15 @@ class PlotMTCM():
             name="Naked steel"
         ))
         
-        if show_stress_from_calc:
+        try:
             fig.add_trace(go.Scatter(
                 x=[self.eps_sm],
                 y=[self.sigma_sr],
                 name="Stress level"
             ))
+        
+        except AttributeError:
+            None
 
         fig.update_layout(
             title="Stress vs. Strain",
@@ -163,7 +165,18 @@ class PlotMTCM():
             fig.add_trace(go.Scatter(
                 x=eps_m,
                 y=wcr_mtcm,
+                showlegend=False
             ))
+
+            try:
+                fig.add_trace(go.Scatter(
+                    x=[self.eps_sm],
+                    y=[self.wcr],
+                    name="Crack width at stress level"
+                ))
+            
+            except AttributeError:
+                None
 
             fig.update_layout(
                 title="Crack widths",
@@ -183,7 +196,18 @@ class PlotMTCM():
             fig.add_trace(go.Scatter(
                 x=eps_m,
                 y=scr_mtcm,
+                showlegend=False
             ))
+
+            try:
+                fig.add_trace(go.Scatter(
+                    x=[self.eps_sm],
+                    y=[self.Lt],
+                    name="Crack width at stress level"
+                ))
+            
+            except AttributeError:
+                None
 
             fig.update_layout(
                 title="Transfer lengths",
