@@ -4,6 +4,9 @@ from .solvers import mtcm
 from .solvers import miso
 from .visualization import PlotMTCM
 
+# Import modules
+from . import common
+
 # Version
 __version__ = '0.0.0a1'
 
@@ -12,5 +15,6 @@ __all__ = [
     'mtcm',
     'miso',
     'PlotMTCM',
+    'common'
 ]
 
