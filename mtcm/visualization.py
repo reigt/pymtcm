@@ -1,5 +1,6 @@
 from . import functions
 from .solvers import mtcm
+from .solvers import smtcm
 
 import numpy as np
 import plotly.express as px
@@ -87,8 +88,10 @@ class PlotMTCM():
     def stress_vs_strain(self,
         eps_m_max: float = 3.0*1e-3,
         eps_m_min: float = 0*1e-3,
+        plot_smtcm: bool = False,
         add_crack_width_plot: bool = False,
         add_transfer_length_plot: bool = False,
+        save_html: bool = False,
     ):
         """Method for plotting stress vs. strain 
         
@@ -105,12 +108,28 @@ class PlotMTCM():
             self.zeta,self.psi,self.u1,self.tau_max,self.alpha
         )
         
+        smtmc_bar = smtcm(
+            self.As_tot,self.n_phi_s,self.phi_s,self.rho_s,
+            self.Es,self.Ecm,self.fctm,self.Lc,self.fs_yield,self.fs_ult,self.eps_ult,
+            self.zeta,self.psi,self.u1,self.tau_max,self.alpha
+        )
+
         # Calculate stresses
         eps_m = np.linspace(eps_m_min,eps_m_max)
+
+        # Lists for MTCM
         sigma_sr_mtcm = []
         wcr_mtcm = []
         scr_mtcm = []
+
+        # Lists for naked steel
         sigma_sr_nakedsteel = []
+
+        # Lists for SMTCM
+        sigma_sr_smtcm = []
+        wcr_smtcm = []
+        scr_smtcm = []
+
         for eps in eps_m:
             
             # MTCM
@@ -122,7 +141,13 @@ class PlotMTCM():
             # Naked steel
             (sigma_sr, sigma_sm, eps_sr) = functions.nakedsteel(eps,self.Es,self.fs_yield,self.fs_ult,self.eps_ult)
             sigma_sr_nakedsteel.append(sigma_sr)
-        
+
+            # SMTCM
+            smtmc_bar.strain(eps)
+            sigma_sr_smtcm.append(smtmc_bar.sigma_sr)
+            wcr_smtcm.append(smtmc_bar.wcr)
+            scr_smtcm.append(smtmc_bar.Lt)
+
         # Plot stress vs. strain        
         fig = go.Figure()
         
@@ -137,7 +162,14 @@ class PlotMTCM():
             y=sigma_sr_nakedsteel,
             name="Naked steel"
         ))
-        
+
+        if plot_smtcm:
+            fig.add_trace(go.Scatter(
+                x=eps_m,
+                y=sigma_sr_smtcm,
+                name="SMTCM"
+            ))
+
         try:
             fig.add_trace(go.Scatter(
                 x=[self.eps_sm],
@@ -156,6 +188,10 @@ class PlotMTCM():
         )
 
         fig.show()
+        
+        # Save HTML
+        if save_html:
+            fig.write_html("stress_strain.html")
 
         # Plot mean strains vs. crack widths
         if add_crack_width_plot:
@@ -165,8 +201,17 @@ class PlotMTCM():
             fig.add_trace(go.Scatter(
                 x=eps_m,
                 y=wcr_mtcm,
-                showlegend=False
+                name='MTCM',
+                # showlegend=False
             ))
+
+            if plot_smtcm:
+                fig.add_trace(go.Scatter(
+                    x=eps_m,
+                    y=wcr_smtcm,
+                    name='SMTCM',
+                    # showlegend=False
+                ))
 
             try:
                 fig.add_trace(go.Scatter(
@@ -187,6 +232,10 @@ class PlotMTCM():
             )
 
             fig.show()
+            
+            # Save HTML
+            if save_html:
+                fig.write_html("crack_widths.html")
 
         # Plot mean strains vs. transfer length
         if add_transfer_length_plot:
@@ -196,8 +245,16 @@ class PlotMTCM():
             fig.add_trace(go.Scatter(
                 x=eps_m,
                 y=scr_mtcm,
-                showlegend=False
+                name='MTCM'
+                # showlegend=False
             ))
+
+            if plot_smtcm:
+                fig.add_trace(go.Scatter(
+                    x=eps_m,
+                    y=scr_smtcm,
+                    name='SMTCM'
+                ))
 
             try:
                 fig.add_trace(go.Scatter(
@@ -218,6 +275,10 @@ class PlotMTCM():
             )
 
             fig.show()
+            
+            # Save HTML
+            if save_html:
+                fig.write_html("transfer_length.html")
 
     def plot_miso(self):
         
@@ -280,7 +341,7 @@ class PlotMTCM():
         ))
 
         fig.update_layout(
-            title="Discretized stress vs. Strain for MTCM MISO",
+            title="Discretized stress vs. strain for MTCM MISO",
             xaxis_title=u"$\u03B5 [‰]$",
             yaxis_title=u"$\u03C3_{sr} [MPa]$",
             template='plotly_dark',
