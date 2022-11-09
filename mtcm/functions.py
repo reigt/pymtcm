@@ -301,7 +301,19 @@ def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
 
     return (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list)
 
-def SCHLM_stress(eps_sr,L,delta,eps_sr_S,gamma,beta,xi,eps_sr_cr,psi):
+def SCHLM_stress(
+    eps_sr: float,
+    L: float,
+    delta: float,
+    eps_sr_S: float,
+    gamma: float,
+    beta: float,
+    xi: float,
+    eps_sr_cr: float,
+    psi: float,
+    fsy: float,
+    Es: float
+):
     
     """
     Function for simplfied CHLM when steel strain at crack is input
@@ -317,32 +329,54 @@ def SCHLM_stress(eps_sr,L,delta,eps_sr_S,gamma,beta,xi,eps_sr_cr,psi):
         eps_sr_cr: Eq. (74) Cracking strain at the end of transfer length
         psi: MTCM parameter related to ratio between strains at rebar level 
             and the mean strains over the cover, default is 0.7
+        fsy: Yield stress of steel
+        Es: Young's modulus of steel
     """
     
-    u0_cllm = (eps_sr_cr**2/(2*gamma))**(1/beta)                                        # Eq. (50) Slip at the loaded end [mm]
-    xr_cllm = (1/delta)*(eps_sr_cr*(1/(2*gamma))**(1/(2*delta)))**(2*delta/beta)        # Eq. (51) Transfer length [mm]  
-    eps_sm_cllm = ((xi*eps_sr_cr*xr_cllm+u0_cllm)/(1+xi))/xr_cllm                                      # Mean steel strains over bar length
-    eps_cm_cllm = (psi*xi*(eps_sr_cr*xr_cllm-u0_cllm)/(1+xi))/xr_cllm                                  # Mean steel strains over bar length
-    Lt_cllm = 2*xr_cllm                                                                   # Transfer length [mm]
-    wcr_cllm = Lt_cllm*(eps_sm_cllm-eps_cm_cllm)                                                    # Crack width [mm]
+    # Strains at cracking
+    u0_cr = (eps_sr_cr**2/(2*gamma))**(1/beta)                                        # Eq. (50) Slip at the loaded end [mm]
+    xr_cr = (1/delta)*(eps_sr_cr*(1/(2*gamma))**(1/(2*delta)))**(2*delta/beta)        # Eq. (51) Transfer length [mm]  
+    eps_sm_cr = ((xi*eps_sr_cr*xr_cr+u0_cr)/(1+xi))/xr_cr                                      # Mean steel strains over bar length
+    eps_cm_cr = (psi*xi*(eps_sr_cr*xr_cr-u0_cr)/(1+xi))/xr_cr                                  # Mean steel strains over bar length
+    Lt_cr = 2*xr_cr                                                                   # Transfer length [mm]
+    wcr_cr = Lt_cr*(eps_sm_cr-eps_cm_cr)                                                    # Crack width [mm]
 
+    # Strains at yielding
     u0_S = (eps_sr_S**2/(2*gamma))**(1/beta)
     eps_sm_S = (xi*eps_sr_S*(L/2)+u0_S)/(1+xi)*(1/(L/2))
     eps_cm_S = (psi*xi*(eps_sr_S*(L/2)-u0_S)/(1+xi))/(L/2)
     delta_eps_sr_S = eps_sr_S-eps_sm_S
-    eps_sm = eps_sr-delta_eps_sr_S
+    eps_sy = fsy/Es
+    eps_smy = eps_sy - delta_eps_sr_S
+
+    # Mean strains
+    eps_sm = (eps_sr-eps_sr_cr)/((eps_sy-eps_sr_cr)/(eps_smy-eps_sm_cr)) + eps_sm_cr
     eps_cm = eps_cm_S
+
+    # Crack widths
     Lt = L
-    wcr = max(Lt*(eps_sm-eps_cm),wcr_cllm)                                                    # Crack width [mm]
+    wcr = max([Lt*(eps_sm-eps_cm),wcr_cr])                                                    # Crack width [mm]
     
     return (eps_sm, eps_cm, Lt, wcr)
 
-def SCHLM_strain(eps_m,L,delta,eps_sr_S,gamma,beta,xi,eps_sr_cr,psi):
+def SCHLM_strain(
+    eps_m: float,
+    L: float,
+    delta: float,
+    eps_sr_S: float,
+    gamma: float,
+    beta: float,
+    xi: float,
+    eps_sr_cr: float,
+    psi: float,
+    fsy: float,
+    Es: float
+):
     
     """Function for simplfied CHLM when mean strain is input
     
     Args:    
-        eps_sr: steel strain at the crack, e.g. sigma_sr/Es = 2.0*1e-3
+        eps_m: Mean strain 
         L: Member length [mm]
         delta: Eq. (41)
         eps_sr_S: Limit steel strain at symmetry section, Eq. (72) 
@@ -354,22 +388,32 @@ def SCHLM_strain(eps_m,L,delta,eps_sr_S,gamma,beta,xi,eps_sr_cr,psi):
             and the mean strains over the cover, default is 0.7
     """    
 
-    u0_cllm = (eps_sr_cr**2/(2*gamma))**(1/beta)                                        # Eq. (50) Slip at the loaded end [mm]
-    xr_cllm = (1/delta)*(eps_sr_cr*(1/(2*gamma))**(1/(2*delta)))**(2*delta/beta)        # Eq. (51) Transfer length [mm]  
-    eps_sm_cllm = ((xi*eps_sr_cr*xr_cllm+u0_cllm)/(1+xi))/xr_cllm                                      # Mean steel strains over bar length
-    eps_cm_cllm = (psi*xi*(eps_sr_cr*xr_cllm-u0_cllm)/(1+xi))/xr_cllm                                  # Mean steel strains over bar length
-    Lt_cllm = 2*xr_cllm                                                                   # Transfer length [mm]
-    wcr_cllm = Lt_cllm*(eps_sm_cllm-eps_cm_cllm)                                                    # Crack width [mm]
+    # Strains at cracking
+    u0_cr = (eps_sr_cr**2/(2*gamma))**(1/beta)                                        # Eq. (50) Slip at the loaded end [mm]
+    xr_cr = (1/delta)*(eps_sr_cr*(1/(2*gamma))**(1/(2*delta)))**(2*delta/beta)        # Eq. (51) Transfer length [mm]  
+    eps_sm_cr = ((xi*eps_sr_cr*xr_cr+u0_cr)/(1+xi))/xr_cr                                      # Mean steel strains over bar length
+    eps_cm_cr = (psi*xi*(eps_sr_cr*xr_cr-u0_cr)/(1+xi))/xr_cr                                  # Mean steel strains over bar length
+    Lt_cr = 2*xr_cr                                                                   # Transfer length [mm]
+    wcr_cr = Lt_cr*(eps_sm_cr-eps_cm_cr)                                                    # Crack width [mm]
 
+    # Strains at yielding
     u0_S = (eps_sr_S**2/(2*gamma))**(1/beta)
     eps_sm_S = (xi*eps_sr_S*(L/2)+u0_S)/(1+xi)*(1/(L/2))
     eps_cm_S = (psi*xi*(eps_sr_S*(L/2)-u0_S)/(1+xi))/(L/2)
     delta_eps_sr_S = eps_sr_S-eps_sm_S
+    eps_sy = fsy/Es
+    eps_smy = eps_sy - delta_eps_sr_S
+
+    # Mean strains
     eps_sm = eps_m
-    eps_sr = eps_sm+delta_eps_sr_S
     eps_cm = eps_cm_S
+
+    # Steel strains
+    eps_sr = ((eps_sy-eps_sr_cr)/(eps_smy-eps_sm_cr))*(eps_sm-eps_sm_cr) + eps_sr_cr
+
+    # Crack widths
     Lt = L
-    wcr = max(Lt*(eps_sm-eps_cm),wcr_cllm)
+    wcr = max([Lt*(eps_sm-eps_cm),wcr_cr])                                                    # Crack width [mm]
     
     return (eps_sr, eps_sm, eps_cm, Lt, wcr)
 
