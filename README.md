@@ -32,7 +32,7 @@ An object of the MTCM class is instantiated as
 tie = mtcm.mtcm(phi_s,n_phi_s,hc_ef,wc_ef,Es,Ecm,fctm)
 ```
 
-Note that in order to instantiate the object the necessary parameters such as 
+Note that the following parameters are necessary arguments in order to instantiate the object 
 
 - `phi_s`: Rebar diameter [mm]
 - `n_phi_s`: Number of rebars with diameter `phi_s`
