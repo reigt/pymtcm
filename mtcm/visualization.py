@@ -118,15 +118,27 @@ class PlotMTCM(PlotBase):
             fig.show()
 
             # Plot bond stresses
-            fig = px.line(
-                self.df,x="xcoord",y="tau",
+            fig = go.Figure()
+
+            fig.add_trace(go.Scatter(
+                x=self.df['xcoord'],
+                y=self.df['tau'],
+                name=u"$\u03C4 [MPa]$"
+            ))
+
+            fig.add_trace(go.Scatter(
+                x=[min(self.df['xcoord']),max(self.df['xcoord'])],
+                y=[self.tau_m,self.tau_m],
+                name=u"$\u03C4_{m} [MPa]$"
+            ))
+            
+            fig.update_layout(
                 title='Bond stress',
+                xaxis_title=u'$x [mm]$',
+                yaxis_title=u'$\u03C4 [MPa]$',
                 template='plotly_dark',
-                labels={
-                    'xcoord': u'$x [mm]$',
-                    'tau': u'$\u03C4 [MPa]$'
-                }
             )
+            
             fig.show()
             
             # Plot strains
