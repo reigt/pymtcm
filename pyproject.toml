@@ -5,10 +5,10 @@ requires = [
 build-backend = "flit_core.buildapi"
 
 [tool.flit.metadata]
-module = "mtcm"
+module = "pymtcm"
 author = "Reignard Tan"
 author-email = "reignard.tan@multiconsult.no"
-home-page = "https://github.com/reigt/mtcm"
+home-page = "https://github.com/reigt/pymtcm"
 description-file = "README.md"
 requires-python = ">=3.10"
 requires = [
