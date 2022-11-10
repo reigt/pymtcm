@@ -9,10 +9,10 @@ from math import sqrt as sqrt
 class mtcm():
     
     def __init__(self,
-        As_tot: float,
-        n_phi_s: float,
         phi_s: float,
-        rho_s: float,
+        n_phi_s: float,
+        hc_ef: float,
+        wc_ef: float,
         Es: float,
         Ecm: float,
         fctm: float,
@@ -48,16 +48,18 @@ class mtcm():
             alpha: MTCM bond slip parameter, default is 0.35
         """        
         
-        # RC tie attributes
-        self.Lc = Lc
-        self.As_tot = As_tot
-        self.n_phi_s = n_phi_s
+        # RC tie geometry
         self.phi_s = phi_s
-        self.rho_s = rho_s
+        self.n_phi_s = n_phi_s
+        self.hc_ef = hc_ef
+        self.wc_ef = wc_ef
+        self.Lc = Lc
+
+        # RC tie materials
         self.Es = Es
         self.Ecm = Ecm
         self.fctm = fctm
-        
+
         # Steel nonlinearity
         self.fs_yield = fs_yield
         self.fs_ult = fs_ult
@@ -70,14 +72,21 @@ class mtcm():
         self.tau_max = tau_max
         self.alpha = alpha
         
+        # RC tie parameters
+        self.As_tot = n_phi_s*pi*phi_s**2/4
+        self.Ac_ef = hc_ef*wc_ef
+        self.rho_s = self.As_tot/self.Ac_ef
+        
     def stress(self,
-        eps_sr: float,
+        sigma_sr: float,
     ):
         """Method for calculating cracks based on steel stresses in cracks in a member
         
         Args:    
-            eps_sr: Steel strain at crack, i.e. sigma_sr/Es
+            sigma_sr: Steel stress at crack [MPa]
         """
+        
+        eps_sr = sigma_sr/self.Es
 
         L_calc = self.Lc
         alpha_E = self.Es/self.Ecm                                                            # Modular ratio
@@ -189,7 +198,7 @@ class mtcm():
         
         beta_sm = 1.0
         
-        self.stress(self.fs_yield/self.Es)
+        self.stress(self.fs_yield)
         L_yield = self.Lt
         x_yield = self.plot_dict['xcoord']
         tau_yield = self.plot_dict['tau']
@@ -264,7 +273,6 @@ class mtcm():
                         concept = 'CHLM'
                         for i in range(0,50):
                             eps_sr = eps_m/beta_sm
-                            # (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,delta,gamma,beta,xi,eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,xcr0)
                             while eps_sr:
                                 (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,delta,gamma,beta,xi,eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,xcr0)
                                 if eps_cm_cover_max >= eps_ctm:
@@ -292,7 +300,6 @@ class mtcm():
                     concept = 'CHLM'
                     for i in range(0,50):
                         eps_sr = eps_m/beta_sm
-                        # (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,delta,gamma,beta,xi,eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,xcr0)
                         while eps_sr:
                             (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,delta,gamma,beta,xi,eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,xcr0)
                             if eps_cm_cover_max >= eps_ctm:
@@ -329,30 +336,6 @@ class mtcm():
         self.wcr = wcr
 
 class smtcm(mtcm):
-    
-    def __init__(self,
-        As_tot: float,
-        n_phi_s: float,
-        phi_s: float,
-        rho_s: float,
-        Es: float,
-        Ecm: float,
-        fctm: float,
-        Lc: float=10000,
-        fs_yield: float=500,
-        fs_ult: float=640,
-        eps_ult: float=100e-3,
-        zeta: float=1.0,
-        psi: float=0.70,
-        u1: float=0.1,
-        tau_max: float=5.0,
-        alpha: float=0.35,
-    ) -> None:
-        
-        super().__init__(
-            As_tot,n_phi_s,phi_s,rho_s,Es,Ecm,fctm,
-            Lc,fs_yield,fs_ult,eps_ult,zeta,psi,u1,tau_max,alpha
-        )
 
     def strain(self,
             eps_m: float,
@@ -379,7 +362,7 @@ class smtcm(mtcm):
         eps_sr_S = (2*gamma)**(1/(2*delta))*((L_calc/2)*delta)**(beta/(2*delta))        # Eq. (72) Limit steel strain at symmetry section
 
         # Strains at yielding        
-        self.stress(self.fs_yield/self.Es)
+        self.stress(self.fs_yield)
         L_yield = self.Lt
         x_yield = self.plot_dict['xcoord']
         tau_yield = self.plot_dict['tau']
@@ -507,30 +490,6 @@ class smtcm(mtcm):
         self.wcr = wcr
 
 class miso(mtcm):
-    
-    def __init__(self,
-        As_tot: float,
-        n_phi_s: float,
-        phi_s: float,
-        rho_s: float,
-        Es: float,
-        Ecm: float,
-        fctm: float,
-        Lc: float=10000,
-        fs_yield: float=500,
-        fs_ult: float=640,
-        eps_ult: float=100e-3,
-        zeta: float=1.0,
-        psi: float=0.70,
-        u1: float=0.1,
-        tau_max: float=5.0,
-        alpha: float=0.35,
-    ) -> None:
-        
-        super().__init__(
-            As_tot,n_phi_s,phi_s,rho_s,Es,Ecm,fctm,
-            Lc,fs_yield,fs_ult,eps_ult,zeta,psi,u1,tau_max,alpha
-        )
         
     def ansys_input(self,
         ansfilename: str=None,
