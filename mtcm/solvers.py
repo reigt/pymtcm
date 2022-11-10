@@ -80,18 +80,17 @@ class mtcm():
         self.rho_s = self.As_tot/self.Ac_ef
         
         # MTCM parameters
-        self.alpha_E = Es/Ecm                                                            # Modular ratio
-        self.eps_ctm = fctm/Ecm                                                          # Cracking strain
-        self.beta = 1+alpha                                                              # Eq. (36)
-        self.delta = (1-alpha)/2                                                         # Eq. (41)
-        self.xi = self.alpha_E*self.rho_s/psi                                                   # Eq. (27)    
-        self.chi = (1+self.xi)*(self.zeta*self.n_phi_s*pi*self.phi_s/(self.As_tot*self.Es))                                  # Eq. (31)
-        self.gamma = self.chi*self.tau_max/(self.beta*self.u1**self.alpha)                                        # Eq. (37)
-        self.xcr0 = (1/self.delta)*((1/self.psi)*((1+self.xi)/self.xi)*self.eps_ctm*(1/(2*self.gamma))
-            **(1/(2*self.delta)))**(2*self.delta/self.beta)                                     # Eq. (75) Crack spacing [mm]
+        self.alpha_E = Es/Ecm
+        self.eps_ctm = fctm/Ecm
+        self.beta = 1+alpha
+        self.delta = (1-alpha)/2
+        self.xi = self.alpha_E*self.rho_s/psi
+        self.chi = (1+self.xi)*(self.zeta*self.n_phi_s*pi*self.phi_s/(self.As_tot*self.Es))
+        self.gamma = self.chi*self.tau_max/(self.beta*self.u1**self.alpha)
+        self.xcr0 = (1/self.delta)*((1/self.psi)*((1+self.xi)/self.xi)*self.eps_ctm*(1/(2*self.gamma))**(1/(2*self.delta)))**(2*self.delta/self.beta)
 
         # Limit state
-        self.eps_sr_cr = (1/self.psi)*(1 + (1/self.xi))*self.eps_ctm                                    # Eq. (74) Cracking strain at the end of transfer length  
+        self.eps_sr_cr = (1/self.psi)*(1 + (1/self.xi))*self.eps_ctm  
 
     def stress(self,
         sigma_sr: float,
@@ -132,11 +131,9 @@ class mtcm():
                         (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                     elif eps_sr >= eps_sr_S:
                         concept = 'CHLM'
-                        # (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                         while eps_sr:
                             (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                             if eps_cm_cover_max >= self.eps_ctm:
-                                # print('MEMBER CRACKED i.e. NEW MEMBER LENGTH L_calc = L_calc/2 CHOSEN')
                                 L_calc = L_calc/2
                             elif eps_cm_cover_max < self.eps_ctm:
                                 break
@@ -147,11 +144,9 @@ class mtcm():
                     (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 elif eps_sr >= eps_sr_S:
                     concept = 'CHLM'
-                    # (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,psi,tau_max,u1,alpha,self.xcr0)
                     while eps_sr:
                         (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                         if eps_cm_cover_max >= self.eps_ctm:
-                            # print('MEMBER CRACKED i.e. NEW MEMBER LENGTH L_calc = L_calc/2 CHOSEN')
                             L_calc = L_calc/2
                         elif eps_cm_cover_max < self.eps_ctm:
                             break
@@ -264,7 +259,7 @@ class mtcm():
                 elif eps_sr >= self.eps_sr_cr:
                     condition = 'Regime 1 - Condition 1 and Condition 2 for new cracked member'
                     L_calc = self.xcr0
-                    eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta)) # Eq. (72) Limit steel strain at symmetry section
+                    eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta)) 
                     if eps_sr < eps_sr_S:
                         concept = 'CLLM'
                         (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
@@ -275,7 +270,6 @@ class mtcm():
                             while eps_sr:
                                 (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                                 if eps_cm_cover_max >= self.eps_ctm:
-                                    # print('MEMBER CRACKED i.e. NEW MEMBER LENGTH L_calc = L_calc/2 CHOSEN')
                                     L_calc = L_calc/2
                                 elif eps_cm_cover_max < self.eps_ctm:
                                     break
@@ -302,7 +296,6 @@ class mtcm():
                         while eps_sr:
                             (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                             if eps_cm_cover_max >= self.eps_ctm:
-                                # print('MEMBER CRACKED i.e. NEW MEMBER LENGTH L_calc = L_calc/2 CHOSEN')
                                 L_calc = L_calc/2
                             elif eps_cm_cover_max < self.eps_ctm:
                                 break
@@ -348,7 +341,7 @@ class smtcm(mtcm):
 
         # Steel strains at symmetry section
         L_calc = self.Lc
-        eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta))        # Eq. (72) Limit steel strain at symmetry section
+        eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta))
 
         # Strains at yielding        
         self.stress(self.fs_yield)
@@ -418,7 +411,7 @@ class smtcm(mtcm):
                 elif eps_sr >= self.eps_sr_cr:
                     condition = 'Regime 1 - Condition 1 and Condition 2 for new cracked member'
                     L_calc = self.xcr0
-                    eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta)) # Eq. (72) Limit steel strain at symmetry section
+                    eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta))
                     if eps_sr < eps_sr_S:
                         concept = 'CLLM'
                         (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
