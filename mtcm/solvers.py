@@ -265,7 +265,7 @@ class mtcm():
                         (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                     elif eps_sr >= eps_sr_S:
                         concept = 'CHLM'
-                        for i in range(0,50):
+                        for i_ in range(0,50):
                             eps_sr = eps_m/beta_sm
                             while eps_sr:
                                 (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
@@ -291,7 +291,7 @@ class mtcm():
                 
                 elif eps_sr >= eps_sr_S:
                     concept = 'CHLM'
-                    for i in range(0,50):
+                    for i_ in range(0,50):
                         eps_sr = eps_m/beta_sm
                         while eps_sr:
                             (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
@@ -349,7 +349,7 @@ class smtcm(mtcm):
         x_yield = self.df['xcoord']
         tau_yield = self.df['tau']
         tau_m_yield = abs(np.trapz(tau_yield,x_yield)/max(x_yield))
-        tau_b0 = self.fctm
+        tau_b0 = tau_m_yield
         tau_b1 = tau_b0/2
         Esh = (self.fs_ult-self.fs_yield)/(self.eps_ult-self.fs_yield/self.Es)
 
