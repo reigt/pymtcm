@@ -249,7 +249,7 @@ class mtcm():
                 if eps_sr < self.eps_sr_cr:
                     if eps_sr >= self.fs_yield/self.Es:
                         concept = 'CLLM_yielding'
-                        (eps_sr, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
+                        (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
                                                 self.alpha_E,self.delta,self.gamma,self.beta,
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else: 
@@ -282,7 +282,7 @@ class mtcm():
                 if eps_sr < eps_sr_S:
                     if eps_sr >= self.fs_yield/self.Es:
                         concept = 'CLLM_yielding'
-                        (eps_sr, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
+                        (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
                                                 self.alpha_E,self.delta,self.gamma,self.beta,
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else:
@@ -303,20 +303,31 @@ class mtcm():
                             break
                         beta_sm = eps_sm/eps_sr
 
-            # Output for plotting           
-            plot_dict = {
-                'xcoord':xcoord[0],
-                'u':u[0],
-                'tau':tau[0],
-                'eps_s':eps_s[0]*1000,
-                'eps_c':eps_c[0]*1000,
-                'eps_sm':eps_sm_list[0]*1000,
-                'eps_cm':eps_cm_list[0]*1000
-            }
-            self.df = pd.DataFrame.from_dict(plot_dict)
+            # Output for plotting
+            try:
+                
+                # Dictionary for plotting chord distribution
+                plot_dict = {
+                    'xcoord':xcoord[0],
+                    'u':u[0],
+                    'tau':tau[0],
+                    'eps_s':eps_s[0]*1000,
+                    'eps_c':eps_c[0]*1000,
+                    'eps_sm':eps_sm_list[0]*1000,
+                    'eps_cm':eps_cm_list[0]*1000
+                }
+                df = pd.DataFrame.from_dict(plot_dict)
 
-            # Mean bond stress
-            self.tau_m = abs(np.trapz(plot_dict['tau'],plot_dict['xcoord'])/max(plot_dict['xcoord']))
+                # Mean bond stress
+                tau_m = abs(np.trapz(plot_dict['tau'],plot_dict['xcoord'])/max(plot_dict['xcoord']))
+                
+            except UnboundLocalError:
+                
+                df = None
+                tau_m = None
+                
+            self.df = df
+            self.tau_m = tau_m
 
         # Output for accessing class attributes
         self.condition = condition
@@ -401,7 +412,7 @@ class smtcm(mtcm):
                 if eps_sr < self.eps_sr_cr:
                     if eps_sr >= self.fs_yield/self.Es:
                         concept = 'CLLM_yielding'
-                        (eps_sr, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
+                        (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
                                                 self.alpha_E,self.delta,self.gamma,self.beta,
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else: 
@@ -436,7 +447,7 @@ class smtcm(mtcm):
                 if eps_sr < eps_sr_S:
                     if eps_sr >= self.fs_yield/self.Es:
                         concept = 'CLLM_yielding'
-                        (eps_sr, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
+                        (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
                                                 self.alpha_E,self.delta,self.gamma,self.beta,
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else:
@@ -541,24 +552,31 @@ class miso(mtcm):
 
         # Generate MISO for MTCM
         eps_m_miso = []
-        eps_m_miso.append(eps_m_list_cllm[0])
-        eps_m_miso.append(eps_m_list_cllm[round(len(eps_m_list_cllm)/2)])
-        eps_m_miso.append(eps_m_list_cllm[-1])
-        eps_m_miso.append(eps_m_list_chlm[0])
-        eps_m_miso.append(eps_m_list_chlm[round(len(eps_m_list_chlm)/2)])
-        eps_m_miso.append(eps_m_list_chlm[-1])
-        eps_m_miso.append(eps_m_list_yield[0])
-        eps_m_miso.append(eps_m_list_yield[-1])
+        try:
+            
+            eps_m_miso.append(eps_m_list_cllm[0])
+            eps_m_miso.append(eps_m_list_cllm[round(len(eps_m_list_cllm)/2)])
+            eps_m_miso.append(eps_m_list_cllm[-1])
+            eps_m_miso.append(eps_m_list_chlm[0])
+            eps_m_miso.append(eps_m_list_chlm[round(len(eps_m_list_chlm)/2)])
+            eps_m_miso.append(eps_m_list_chlm[-1])
+            eps_m_miso.append(eps_m_list_yield[0])
+            eps_m_miso.append(eps_m_list_yield[-1])
 
-        sigma_sr_miso = []
-        sigma_sr_miso.append(sigma_sr_list_cllm[0])
-        sigma_sr_miso.append(sigma_sr_list_cllm[round(len(sigma_sr_list_cllm)/2)])
-        sigma_sr_miso.append(sigma_sr_list_cllm[-1])
-        sigma_sr_miso.append(sigma_sr_list_chlm[0])
-        sigma_sr_miso.append(sigma_sr_list_chlm[round(len(sigma_sr_list_chlm)/2)])
-        sigma_sr_miso.append(sigma_sr_list_chlm[-1])
-        sigma_sr_miso.append(sigma_sr_list_yield[0])
-        sigma_sr_miso.append(sigma_sr_list_yield[-1])
+            sigma_sr_miso = []
+            sigma_sr_miso.append(sigma_sr_list_cllm[0])
+            sigma_sr_miso.append(sigma_sr_list_cllm[round(len(sigma_sr_list_cllm)/2)])
+            sigma_sr_miso.append(sigma_sr_list_cllm[-1])
+            sigma_sr_miso.append(sigma_sr_list_chlm[0])
+            sigma_sr_miso.append(sigma_sr_list_chlm[round(len(sigma_sr_list_chlm)/2)])
+            sigma_sr_miso.append(sigma_sr_list_chlm[-1])
+            sigma_sr_miso.append(sigma_sr_list_yield[0])
+            sigma_sr_miso.append(sigma_sr_list_yield[-1])
+            
+        except IndexError:
+            
+            print('IndexError: CLLM yielding, please increase reinforcement ratio!')
+            pass
 
         # Initial values
         eps_pl_miso = eps_m_miso[1]

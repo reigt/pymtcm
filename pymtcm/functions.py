@@ -95,7 +95,7 @@ def CLLM_yield(eps_m,L,phi_s,rho_s,Es,Ecm,Esh,alpha_E,delta,gamma,beta,
     Lt = L_yield
     wcr = (eps_sm-eps_cm)*Lt
     
-    return (eps_sr, wcr)
+    return (eps_sr, eps_sm, eps_cm, Lt, wcr)
         
 def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
     """Function comparatively heavily loaded member behaviour
