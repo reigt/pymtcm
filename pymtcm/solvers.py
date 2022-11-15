@@ -488,7 +488,8 @@ class miso(mtcm):
         gamma_s: float=7.775,
         v_s: float=0.2,
         alpha_s: float=1.2e-5,
-        eps_m_max: float=2.5e-3
+        eps_m_max: float=2.5e-3,
+        fully_discretized: bool=False,
     ):
         """Method for generating Multilinear Isotropic model for MTCM in ANSYS. 
 
@@ -499,6 +500,7 @@ class miso(mtcm):
             v_s (float): Poisson's ratio, default is 0.2. 
             alpha_s (float): Temperature dilation coefficient, default is 1.2e-5.
             eps_m_max (float): Max mean strain in stress-strain curve, default is 2.5e-3. 
+            fully_discretized (bool): Discretize MTCM at each discrete point, default is False
         """
 
         # Set defaults
@@ -552,26 +554,52 @@ class miso(mtcm):
 
         # Generate MISO for MTCM
         eps_m_miso = []
+        sigma_sr_miso = []
         try:
             
-            eps_m_miso.append(eps_m_list_cllm[0])
-            eps_m_miso.append(eps_m_list_cllm[round(len(eps_m_list_cllm)/2)])
-            eps_m_miso.append(eps_m_list_cllm[-1])
-            eps_m_miso.append(eps_m_list_chlm[0])
-            eps_m_miso.append(eps_m_list_chlm[round(len(eps_m_list_chlm)/2)])
-            eps_m_miso.append(eps_m_list_chlm[-1])
-            eps_m_miso.append(eps_m_list_yield[0])
-            eps_m_miso.append(eps_m_list_yield[-1])
+            if fully_discretized:
+                
+                # Strains
+                for this_eps in eps_m_list_cllm:
+                    eps_m_miso.append(this_eps)
+                
+                for this_eps in eps_m_list_chlm:
+                    eps_m_miso.append(this_eps)
+                    
+                for this_eps in eps_m_list_yield:
+                    eps_m_miso.append(this_eps)
+                
+                # Steel stress
+                for this_sigma in sigma_sr_list_cllm:
+                    sigma_sr_miso.append(this_sigma)
+                
+                for this_sigma in sigma_sr_list_chlm:
+                    sigma_sr_miso.append(this_sigma)
+                    
+                for this_sigma in sigma_sr_list_yield:
+                    sigma_sr_miso.append(this_sigma)
+                    
+            else:
+                
+                # Strains
+                eps_m_miso.append(eps_m_list_cllm[0])
+                eps_m_miso.append(eps_m_list_cllm[round(len(eps_m_list_cllm)/2)])
+                eps_m_miso.append(eps_m_list_cllm[-1])
+                eps_m_miso.append(eps_m_list_chlm[0])
+                eps_m_miso.append(eps_m_list_chlm[round(len(eps_m_list_chlm)/2)])
+                eps_m_miso.append(eps_m_list_chlm[-1])
+                eps_m_miso.append(eps_m_list_yield[0])
+                eps_m_miso.append(eps_m_list_yield[-1])
 
-            sigma_sr_miso = []
-            sigma_sr_miso.append(sigma_sr_list_cllm[0])
-            sigma_sr_miso.append(sigma_sr_list_cllm[round(len(sigma_sr_list_cllm)/2)])
-            sigma_sr_miso.append(sigma_sr_list_cllm[-1])
-            sigma_sr_miso.append(sigma_sr_list_chlm[0])
-            sigma_sr_miso.append(sigma_sr_list_chlm[round(len(sigma_sr_list_chlm)/2)])
-            sigma_sr_miso.append(sigma_sr_list_chlm[-1])
-            sigma_sr_miso.append(sigma_sr_list_yield[0])
-            sigma_sr_miso.append(sigma_sr_list_yield[-1])
+                # Steel stress
+                sigma_sr_miso.append(sigma_sr_list_cllm[0])
+                sigma_sr_miso.append(sigma_sr_list_cllm[round(len(sigma_sr_list_cllm)/2)])
+                sigma_sr_miso.append(sigma_sr_list_cllm[-1])
+                sigma_sr_miso.append(sigma_sr_list_chlm[0])
+                sigma_sr_miso.append(sigma_sr_list_chlm[round(len(sigma_sr_list_chlm)/2)])
+                sigma_sr_miso.append(sigma_sr_list_chlm[-1])
+                sigma_sr_miso.append(sigma_sr_list_yield[0])
+                sigma_sr_miso.append(sigma_sr_list_yield[-1])
             
         except IndexError:
             
