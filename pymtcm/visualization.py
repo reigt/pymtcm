@@ -80,7 +80,9 @@ class PlotBase:
         )
 
         # Calculate stresses
-        eps_m = np.linspace(eps_m_min, eps_m_max)
+        eps_m_lt = np.linspace(eps_m_min, self.eps_sr_cr, 100)
+        delta_eps_m_lt = eps_m_lt[1]-eps_m_lt[0]
+        eps_m = np.append(eps_m_lt,np.linspace(self.eps_sr_cr+delta_eps_m_lt,eps_m_max))
 
         # Dictionary for MTCM
         mtcm_dict = {
