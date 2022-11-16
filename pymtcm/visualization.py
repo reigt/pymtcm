@@ -157,7 +157,7 @@ class PlotMTCM(PlotBase):
 
             fig.add_trace(
                 go.Scatter(
-                    x=[min(self.df['xcoord']), max(self.df['xcoord'])],
+                    x=[0, self.Lt/2],
                     y=[self.tau_m, self.tau_m],
                     name=u"$\u03C4_{m} [MPa]$",
                 )

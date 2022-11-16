@@ -31,38 +31,45 @@ def CLLM(eps_sr,delta,gamma,beta,xi,psi,Lc,tau_max,u1,alpha):
     eps_cm_cover_max = psi*xi/(1+xi)*eps_sr                                     # Eq. (73) Mean concrete strains over cover 
     Lt = 2*xr                                                                   # Transfer length [mm]
     wcr = Lt*(eps_sm-eps_cm)                                                    # Crack width [mm]
-    
+        
     # Plotting
-    STEPS = 30
-    xcoord = np.zeros((1,STEPS))
-    xcoord[0,:] = np.linspace(0,Lc/2,STEPS)
-    u = np.zeros((1,STEPS))
-    tau = np.zeros((1,STEPS))
-    eps_s = np.zeros((1,STEPS))
-    eps_c = np.zeros((1,STEPS))
-    eps_sm_list = np.zeros((1,STEPS))
-    eps_cm_list = np.zeros((1,STEPS))
+    xcoord_lt = np.linspace(0,xr)
+    delta_xcoord_lt = xcoord_lt[1]-xcoord_lt[0]
+    xcoord = np.append(xcoord_lt,np.linspace(xr+delta_xcoord_lt,Lc/2))
+    u = np.zeros(len(xcoord))
+    tau = np.zeros(len(xcoord))
     
+    eps_s = np.full(len(xcoord),xi/(1+xi)*eps_sr)
+    eps_c = np.full(len(xcoord),xi/(1+xi)*eps_sr)
+    eps_sm_list = np.full(len(xcoord),eps_sm)
+    eps_cm_list = np.full(len(xcoord),eps_cm)
     
-    for i in range(0,STEPS):
-            if xcoord[0,i] < xr: 
-                u[0,i] = (delta*sqrt(2*gamma)*(xr-xcoord[0,i]))**(1/delta) # Eq. (49) Slip [mm]
-                tau[0,i] = tau_max*(u[0,i]/u1)**alpha                           # Eq. (33) Bond stresses [MPa]
-                eps_s[0,i] = ((xi*eps_sr + (2*gamma)**(1/(2*delta))*(delta*
-                    (xr-xcoord[0,i]))**(beta/(2*delta)))/(1+xi))                # Eq. (52) Steel strains                 
-                eps_c[0,i] = (xi*(eps_sr - (2*gamma)**(1/(2*delta))*(delta*
-                    (xr-xcoord[0,i]))**(beta/(2*delta)))/(1+xi))                # Eq. (53) Concrete strains at interface
-                eps_sm_list[0,i] = eps_sm
-                eps_cm_list[0,i] = eps_cm
+    # Fill in arrays
+    i_ = 0
+    for this_xcoord in xcoord:
+        
+        if this_xcoord < xr:
+            
+            # Slip
+            u[i_] = (delta*sqrt(2*gamma)*(xr-this_xcoord))**(1/delta)
+             
+            # Bond stress
+            tau[i_] = tau_max*(u[i_]/u1)**alpha                           # Eq. (33) Bond stresses [MPa]
+            
+            # Steel strains
+            eps_s[i_] = ((xi*eps_sr + (2*gamma)**(1/(2*delta))*(delta*
+                (xr-this_xcoord))**(beta/(2*delta)))/(1+xi))                # Eq. (52) Steel strains     
+            
+            # Concrete strains            
+            eps_c[i_] = (xi*(eps_sr - (2*gamma)**(1/(2*delta))*(delta*
+                (xr-this_xcoord))**(beta/(2*delta)))/(1+xi))                # Eq. (53) Concrete strains at interface
+             
+        i_ += 1
 
-            elif xcoord[0,i] >= xr:
-                u[0,i] = 0
-                eps_s[0,i] = xi/(1+xi)*eps_sr                                   # Eq. (52) Steel strains beyond xr
-                eps_c[0,i] = xi/(1+xi)*eps_sr                                   # Eq. (53) Concrete strains at interface beyond xr
-                eps_sm_list[0,i] = eps_sm
-                eps_cm_list[0,i] = eps_cm
+    # Mean bond stress
+    tau_m = abs(np.trapz(tau[0:len(xcoord_lt)],xcoord_lt)/xr)
 
-    return (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list)
+    return (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m)
         
 def CLLM_yield(eps_m,L,phi_s,rho_s,Es,Ecm,Esh,alpha_E,delta,gamma,beta,
                fs_yield,tau_max,u1,alpha):
@@ -258,35 +265,44 @@ def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
     eps_cm = (psi*xi*(eps_sr*(L/2)-u0)/(1+xi))/(L/2)                           # Mean concrete strains    
     
     # Plotting
-    STEPS = 30
-    u = np.zeros((1,STEPS))
-    u[0,:] = np.linspace(0,u0,STEPS)
-    FX = np.zeros((1,STEPS))
-    xcoord = np.zeros((1,STEPS))
-    tau = np.zeros((1,STEPS))
-    eps_s = np.zeros((1,STEPS))
-    eps_c = np.zeros((1,STEPS))
-    eps_sm_list = np.zeros((1,STEPS))
-    eps_cm_list = np.zeros((1,STEPS))
+    u = np.linspace(0,u0)
+    xcoord = np.zeros(len(u))
+    tau = np.zeros(len(u))
+    FX = np.zeros(len(u))
+    eps_s = np.zeros(len(u))
+    eps_c = np.zeros(len(u))
+    eps_sm_list = np.full(len(u),eps_sm)
+    eps_cm_list = np.full(len(u),eps_cm)
 
-    for i in range(0,STEPS):
+    i_ = 0
+    for this_u in u:
         for k in range(0,len(bink)):
-            if u[0,i] < ud:
-                FX[0,i] = FX[0,i] + bink[k]*(gamma**k*(1/C)**(1/2+k)*(u[0,i]**(1+k*beta)/(1+k*beta))) 
-            elif u[0,i] > ud:
-                FX[0,i] = FX[0,i] + bink[k]*((C/gamma)**k*(u[0,i]**(delta-k*beta)/(delta-k*beta)))
-        if u[0,i] < ud:
-            xcoord[0,i] = B1 - 1/sqrt(2)*FX[0,i] 
-        elif u[0,i] > ud:
-            xcoord[0,i] = B2 - 1/sqrt(2*gamma)*FX[0,i] 
+            if this_u < ud:
+                FX[i_] = FX[i_] + bink[k]*(gamma**k*(1/C)**(1/2+k)*(this_u**(1+k*beta)/(1+k*beta))) 
+            elif this_u > ud:
+                FX[i_] = FX[i_] + bink[k]*((C/gamma)**k*(this_u**(delta-k*beta)/(delta-k*beta)))
         
-        tau[0,i] = tau_max*(u[0,i]/u1)**alpha                                  # Eq. (33) Bond stresses [MPa]
-        eps_s[0,i] = ((xi*eps_sr + sqrt(2*(gamma*u[0,i]**beta+C)))/
+        # X-coordinates
+        if this_u < ud:
+            xcoord[i_] = B1 - 1/sqrt(2)*FX[i_] 
+        elif this_u > ud:
+            xcoord[i_] = B2 - 1/sqrt(2*gamma)*FX[i_] 
+        
+        # Bond stress
+        tau[i_] = tau_max*(this_u/u1)**alpha                                  # Eq. (33) Bond stresses [MPa]
+        
+        # Steel strains
+        eps_s[i_] = ((xi*eps_sr + sqrt(2*(gamma*this_u**beta+C)))/
                         (1+xi))                                               # Eq. (44) Steel strains
-        eps_c[0,i] = (xi*(eps_sr - sqrt(2*(gamma*u[0,i]**beta+C)))/
+        
+        # Concrete strains
+        eps_c[i_] = (xi*(eps_sr - sqrt(2*(gamma*this_u**beta+C)))/
                         (1+xi))                                               # Eq. (45) Steel strains       
-        eps_sm_list[0,i] = eps_sm
-        eps_cm_list[0,i] = eps_cm
+
+        i_ += 1
+
+    # Mean bond stress
+    tau_m = abs(np.trapz(tau,xcoord)/(xcr0/2))
     
     # Calculate crack widths
     u0_cllm = (eps_sr_cr**2/(2*gamma))**(1/beta)                                        # Eq. (50) Slip at the loaded end [mm]
@@ -299,7 +315,7 @@ def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
     Lt = xcr0                                                                      # Crack spacing [mm]    
     wcr = max(Lt*(eps_sm-eps_cm),wcr_cllm)                                                    # Crack width [mm]
 
-    return (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list)
+    return (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m)
 
 def SCHLM_stress(
     eps_sr: float,

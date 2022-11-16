@@ -121,18 +121,18 @@ class mtcm():
                 condition = 'Condition 1'
                 if eps_sr < self.eps_sr_cr:
                     concept = 'CLLM'
-                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 elif eps_sr >= self.eps_sr_cr:
                     condition = 'Condition 1 and Condition 2 for new cracked member'
                     L_calc = self.xcr0
                     eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta)) 
                     if eps_sr < eps_sr_S:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                     elif eps_sr >= eps_sr_S:
                         concept = 'CHLM'
                         while eps_sr:
-                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                             if eps_cm_cover_max >= self.eps_ctm:
                                 L_calc = L_calc/2
                             elif eps_cm_cover_max < self.eps_ctm:
@@ -141,11 +141,11 @@ class mtcm():
                 condition = 'Condition 2'
                 if eps_sr < eps_sr_S:
                     concept = 'CLLM'
-                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list), tau_m = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 elif eps_sr >= eps_sr_S:
                     concept = 'CHLM'
                     while eps_sr:
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                         if eps_cm_cover_max >= self.eps_ctm:
                             L_calc = L_calc/2
                         elif eps_cm_cover_max < self.eps_ctm:
@@ -153,18 +153,18 @@ class mtcm():
             
             # Output for plotting           
             plot_dict = {
-                'xcoord':xcoord[0],
-                'u':u[0],
-                'tau':tau[0],
-                'eps_s':eps_s[0]*1000,
-                'eps_c':eps_c[0]*1000,
-                'eps_sm':eps_sm_list[0]*1000,
-                'eps_cm':eps_cm_list[0]*1000
+                'xcoord':xcoord,
+                'u':u,
+                'tau':tau,
+                'eps_s':eps_s*1000,
+                'eps_c':eps_c*1000,
+                'eps_sm':eps_sm_list*1000,
+                'eps_cm':eps_cm_list*1000
             }
             self.df = pd.DataFrame.from_dict(plot_dict)
             
             # Mean bond stress
-            self.tau_m = abs(np.trapz(plot_dict['tau'],plot_dict['xcoord'])/max(plot_dict['xcoord']))
+            self.tau_m = tau_m
             
         # Output for accessing class attributes
         self.condition = condition
@@ -254,7 +254,7 @@ class mtcm():
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else: 
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 
                 elif eps_sr >= self.eps_sr_cr:
                     condition = 'Regime 1 - Condition 1 and Condition 2 for new cracked member'
@@ -262,13 +262,13 @@ class mtcm():
                     eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta)) 
                     if eps_sr < eps_sr_S:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                     elif eps_sr >= eps_sr_S:
                         concept = 'CHLM'
                         for i_ in range(0,50):
                             eps_sr = eps_m/beta_sm
                             while eps_sr:
-                                (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                                (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                                 if eps_cm_cover_max >= self.eps_ctm:
                                     L_calc = L_calc/2
                                 elif eps_cm_cover_max < self.eps_ctm:
@@ -287,14 +287,14 @@ class mtcm():
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 
                 elif eps_sr >= eps_sr_S:
                     concept = 'CHLM'
                     for i_ in range(0,50):
                         eps_sr = eps_m/beta_sm
                         while eps_sr:
-                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                             if eps_cm_cover_max >= self.eps_ctm:
                                 L_calc = L_calc/2
                             elif eps_cm_cover_max < self.eps_ctm:
@@ -306,20 +306,17 @@ class mtcm():
             # Output for plotting
             try:
                 
-                # Dictionary for plotting chord distribution
+                # Output for plotting           
                 plot_dict = {
-                    'xcoord':xcoord[0],
-                    'u':u[0],
-                    'tau':tau[0],
-                    'eps_s':eps_s[0]*1000,
-                    'eps_c':eps_c[0]*1000,
-                    'eps_sm':eps_sm_list[0]*1000,
-                    'eps_cm':eps_cm_list[0]*1000
+                    'xcoord':xcoord,
+                    'u':u,
+                    'tau':tau,
+                    'eps_s':eps_s*1000,
+                    'eps_c':eps_c*1000,
+                    'eps_sm':eps_sm_list*1000,
+                    'eps_cm':eps_cm_list*1000
                 }
                 df = pd.DataFrame.from_dict(plot_dict)
-
-                # Mean bond stress
-                tau_m = abs(np.trapz(plot_dict['tau'],plot_dict['xcoord'])/max(plot_dict['xcoord']))
                 
             except UnboundLocalError:
                 
@@ -417,7 +414,7 @@ class smtcm(mtcm):
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else: 
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 
                 elif eps_sr >= self.eps_sr_cr:
                     condition = 'Regime 1 - Condition 1 and Condition 2 for new cracked member'
@@ -425,7 +422,7 @@ class smtcm(mtcm):
                     eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta))
                     if eps_sr < eps_sr_S:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                     elif eps_sr >= eps_sr_S:
                         concept = 'SCHLM'
                         (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.SCHLM_strain(
@@ -452,7 +449,7 @@ class smtcm(mtcm):
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 
                 elif eps_sr >= eps_sr_S:
                     concept = 'SCHLM'
