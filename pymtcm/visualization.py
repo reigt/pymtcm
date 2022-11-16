@@ -79,7 +79,9 @@ class PlotBase:
         )
 
         # Calculate stresses
-        eps_m = np.linspace(eps_m_min, eps_m_max)
+        eps_m_lt = np.linspace(eps_m_min, self.eps_sr_cr, 100)
+        delta_eps_m_lt = eps_m_lt[1]-eps_m_lt[0]
+        eps_m = np.append(eps_m_lt,np.linspace(self.eps_sr_cr+delta_eps_m_lt,eps_m_max))
 
         # Dictionary for MTCM
         mtcm_dict = {
@@ -156,7 +158,7 @@ class PlotMTCM(PlotBase):
 
             fig.add_trace(
                 go.Scatter(
-                    x=[min(self.df['xcoord']), max(self.df['xcoord'])],
+                    x=[0, self.Lt/2],
                     y=[self.tau_m, self.tau_m],
                     name=u"$\u03C4_{m} [MPa]$",
                 )

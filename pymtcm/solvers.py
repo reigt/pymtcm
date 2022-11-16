@@ -121,18 +121,18 @@ class mtcm():
                 condition = 'Condition 1'
                 if eps_sr < self.eps_sr_cr:
                     concept = 'CLLM'
-                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 elif eps_sr >= self.eps_sr_cr:
                     condition = 'Condition 1 and Condition 2 for new cracked member'
                     L_calc = self.xcr0
                     eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta)) 
                     if eps_sr < eps_sr_S:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                     elif eps_sr >= eps_sr_S:
                         concept = 'CHLM'
                         while eps_sr:
-                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                             if eps_cm_cover_max >= self.eps_ctm:
                                 L_calc = L_calc/2
                             elif eps_cm_cover_max < self.eps_ctm:
@@ -141,11 +141,11 @@ class mtcm():
                 condition = 'Condition 2'
                 if eps_sr < eps_sr_S:
                     concept = 'CLLM'
-                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list), tau_m = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 elif eps_sr >= eps_sr_S:
                     concept = 'CHLM'
                     while eps_sr:
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                         if eps_cm_cover_max >= self.eps_ctm:
                             L_calc = L_calc/2
                         elif eps_cm_cover_max < self.eps_ctm:
@@ -153,18 +153,18 @@ class mtcm():
             
             # Output for plotting           
             plot_dict = {
-                'xcoord':xcoord[0],
-                'u':u[0],
-                'tau':tau[0],
-                'eps_s':eps_s[0]*1000,
-                'eps_c':eps_c[0]*1000,
-                'eps_sm':eps_sm_list[0]*1000,
-                'eps_cm':eps_cm_list[0]*1000
+                'xcoord':xcoord,
+                'u':u,
+                'tau':tau,
+                'eps_s':eps_s*1000,
+                'eps_c':eps_c*1000,
+                'eps_sm':eps_sm_list*1000,
+                'eps_cm':eps_cm_list*1000
             }
             self.df = pd.DataFrame.from_dict(plot_dict)
             
             # Mean bond stress
-            self.tau_m = abs(np.trapz(plot_dict['tau'],plot_dict['xcoord'])/max(plot_dict['xcoord']))
+            self.tau_m = tau_m
             
         # Output for accessing class attributes
         self.condition = condition
@@ -249,12 +249,12 @@ class mtcm():
                 if eps_sr < self.eps_sr_cr:
                     if eps_sr >= self.fs_yield/self.Es:
                         concept = 'CLLM_yielding'
-                        (eps_sr, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
+                        (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
                                                 self.alpha_E,self.delta,self.gamma,self.beta,
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else: 
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 
                 elif eps_sr >= self.eps_sr_cr:
                     condition = 'Regime 1 - Condition 1 and Condition 2 for new cracked member'
@@ -262,13 +262,13 @@ class mtcm():
                     eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta)) 
                     if eps_sr < eps_sr_S:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                     elif eps_sr >= eps_sr_S:
                         concept = 'CHLM'
                         for i_ in range(0,50):
                             eps_sr = eps_m/beta_sm
                             while eps_sr:
-                                (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                                (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                                 if eps_cm_cover_max >= self.eps_ctm:
                                     L_calc = L_calc/2
                                 elif eps_cm_cover_max < self.eps_ctm:
@@ -282,19 +282,19 @@ class mtcm():
                 if eps_sr < eps_sr_S:
                     if eps_sr >= self.fs_yield/self.Es:
                         concept = 'CLLM_yielding'
-                        (eps_sr, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
+                        (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
                                                 self.alpha_E,self.delta,self.gamma,self.beta,
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 
                 elif eps_sr >= eps_sr_S:
                     concept = 'CHLM'
                     for i_ in range(0,50):
                         eps_sr = eps_m/beta_sm
                         while eps_sr:
-                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
                             if eps_cm_cover_max >= self.eps_ctm:
                                 L_calc = L_calc/2
                             elif eps_cm_cover_max < self.eps_ctm:
@@ -303,20 +303,28 @@ class mtcm():
                             break
                         beta_sm = eps_sm/eps_sr
 
-            # Output for plotting           
-            plot_dict = {
-                'xcoord':xcoord[0],
-                'u':u[0],
-                'tau':tau[0],
-                'eps_s':eps_s[0]*1000,
-                'eps_c':eps_c[0]*1000,
-                'eps_sm':eps_sm_list[0]*1000,
-                'eps_cm':eps_cm_list[0]*1000
-            }
-            self.df = pd.DataFrame.from_dict(plot_dict)
-
-            # Mean bond stress
-            self.tau_m = abs(np.trapz(plot_dict['tau'],plot_dict['xcoord'])/max(plot_dict['xcoord']))
+            # Output for plotting
+            try:
+                
+                # Output for plotting           
+                plot_dict = {
+                    'xcoord':xcoord,
+                    'u':u,
+                    'tau':tau,
+                    'eps_s':eps_s*1000,
+                    'eps_c':eps_c*1000,
+                    'eps_sm':eps_sm_list*1000,
+                    'eps_cm':eps_cm_list*1000
+                }
+                df = pd.DataFrame.from_dict(plot_dict)
+                
+            except UnboundLocalError:
+                
+                df = None
+                tau_m = None
+                
+            self.df = df
+            self.tau_m = tau_m
 
         # Output for accessing class attributes
         self.condition = condition
@@ -401,12 +409,12 @@ class smtcm(mtcm):
                 if eps_sr < self.eps_sr_cr:
                     if eps_sr >= self.fs_yield/self.Es:
                         concept = 'CLLM_yielding'
-                        (eps_sr, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
+                        (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
                                                 self.alpha_E,self.delta,self.gamma,self.beta,
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else: 
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 
                 elif eps_sr >= self.eps_sr_cr:
                     condition = 'Regime 1 - Condition 1 and Condition 2 for new cracked member'
@@ -414,7 +422,7 @@ class smtcm(mtcm):
                     eps_sr_S = (2*self.gamma)**(1/(2*self.delta))*((L_calc/2)*self.delta)**(self.beta/(2*self.delta))
                     if eps_sr < eps_sr_S:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                     elif eps_sr >= eps_sr_S:
                         concept = 'SCHLM'
                         (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.SCHLM_strain(
@@ -436,12 +444,12 @@ class smtcm(mtcm):
                 if eps_sr < eps_sr_S:
                     if eps_sr >= self.fs_yield/self.Es:
                         concept = 'CLLM_yielding'
-                        (eps_sr, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
+                        (eps_sr, eps_sm, eps_cm, Lt, wcr) = functions.CLLM_yield(eps_m,L_calc,self.phi_s,self.rho_s,self.Es,self.Ecm,Esh,
                                                 self.alpha_E,self.delta,self.gamma,self.beta,
                                                 self.fs_yield,self.tau_max,self.u1,self.alpha)
                     else:
                         concept = 'CLLM'
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 
                 elif eps_sr >= eps_sr_S:
                     concept = 'SCHLM'
@@ -477,7 +485,8 @@ class miso(mtcm):
         gamma_s: float=7.775,
         v_s: float=0.2,
         alpha_s: float=1.2e-5,
-        eps_m_max: float=2.5e-3
+        eps_m_max: float=2.5e-3,
+        fully_discretized: bool=False,
     ):
         """Method for generating Multilinear Isotropic model for MTCM in ANSYS. 
 
@@ -488,6 +497,7 @@ class miso(mtcm):
             v_s (float): Poisson's ratio, default is 0.2. 
             alpha_s (float): Temperature dilation coefficient, default is 1.2e-5.
             eps_m_max (float): Max mean strain in stress-strain curve, default is 2.5e-3. 
+            fully_discretized (bool): Discretize MTCM at each discrete point, default is False
         """
 
         # Set defaults
@@ -541,24 +551,57 @@ class miso(mtcm):
 
         # Generate MISO for MTCM
         eps_m_miso = []
-        eps_m_miso.append(eps_m_list_cllm[0])
-        eps_m_miso.append(eps_m_list_cllm[round(len(eps_m_list_cllm)/2)])
-        eps_m_miso.append(eps_m_list_cllm[-1])
-        eps_m_miso.append(eps_m_list_chlm[0])
-        eps_m_miso.append(eps_m_list_chlm[round(len(eps_m_list_chlm)/2)])
-        eps_m_miso.append(eps_m_list_chlm[-1])
-        eps_m_miso.append(eps_m_list_yield[0])
-        eps_m_miso.append(eps_m_list_yield[-1])
-
         sigma_sr_miso = []
-        sigma_sr_miso.append(sigma_sr_list_cllm[0])
-        sigma_sr_miso.append(sigma_sr_list_cllm[round(len(sigma_sr_list_cllm)/2)])
-        sigma_sr_miso.append(sigma_sr_list_cllm[-1])
-        sigma_sr_miso.append(sigma_sr_list_chlm[0])
-        sigma_sr_miso.append(sigma_sr_list_chlm[round(len(sigma_sr_list_chlm)/2)])
-        sigma_sr_miso.append(sigma_sr_list_chlm[-1])
-        sigma_sr_miso.append(sigma_sr_list_yield[0])
-        sigma_sr_miso.append(sigma_sr_list_yield[-1])
+        try:
+            
+            if fully_discretized:
+                
+                # Strains
+                for this_eps in eps_m_list_cllm:
+                    eps_m_miso.append(this_eps)
+                
+                for this_eps in eps_m_list_chlm:
+                    eps_m_miso.append(this_eps)
+                    
+                for this_eps in eps_m_list_yield:
+                    eps_m_miso.append(this_eps)
+                
+                # Steel stress
+                for this_sigma in sigma_sr_list_cllm:
+                    sigma_sr_miso.append(this_sigma)
+                
+                for this_sigma in sigma_sr_list_chlm:
+                    sigma_sr_miso.append(this_sigma)
+                    
+                for this_sigma in sigma_sr_list_yield:
+                    sigma_sr_miso.append(this_sigma)
+                    
+            else:
+                
+                # Strains
+                eps_m_miso.append(eps_m_list_cllm[0])
+                eps_m_miso.append(eps_m_list_cllm[round(len(eps_m_list_cllm)/2)])
+                eps_m_miso.append(eps_m_list_cllm[-1])
+                eps_m_miso.append(eps_m_list_chlm[0])
+                eps_m_miso.append(eps_m_list_chlm[round(len(eps_m_list_chlm)/2)])
+                eps_m_miso.append(eps_m_list_chlm[-1])
+                eps_m_miso.append(eps_m_list_yield[0])
+                eps_m_miso.append(eps_m_list_yield[-1])
+
+                # Steel stress
+                sigma_sr_miso.append(sigma_sr_list_cllm[0])
+                sigma_sr_miso.append(sigma_sr_list_cllm[round(len(sigma_sr_list_cllm)/2)])
+                sigma_sr_miso.append(sigma_sr_list_cllm[-1])
+                sigma_sr_miso.append(sigma_sr_list_chlm[0])
+                sigma_sr_miso.append(sigma_sr_list_chlm[round(len(sigma_sr_list_chlm)/2)])
+                sigma_sr_miso.append(sigma_sr_list_chlm[-1])
+                sigma_sr_miso.append(sigma_sr_list_yield[0])
+                sigma_sr_miso.append(sigma_sr_list_yield[-1])
+            
+        except IndexError:
+            
+            print('IndexError: CLLM yielding, please increase reinforcement ratio!')
+            pass
 
         # Initial values
         eps_pl_miso = eps_m_miso[1]
