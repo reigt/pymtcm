@@ -1,11 +1,10 @@
-from . import functions
-from .solvers import mtcm
-from .solvers import smtcm
-
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
+from . import functions
+from .solvers import mtcm, smtcm
 
 
 class PlotBase:
@@ -230,6 +229,7 @@ class PlotMTCM(PlotBase):
         eps_m_max: float = None,
         add_stress_strain_plot: bool = True,
         add_crack_width_plot: bool = True,
+        add_crackwidth_stress_plot: bool = True,
         add_transfer_length_plot: bool = True,
         save_html: bool = False,
         add_smtcm: bool = False,
@@ -243,7 +243,7 @@ class PlotMTCM(PlotBase):
 
         # Generate plotting data
         self._gen_data(eps_m_min=eps_m_min, eps_m_max=eps_m_max)
-
+        
         # Plot stress vs. strain
         if add_stress_strain_plot:
             fig = go.Figure()
@@ -276,7 +276,9 @@ class PlotMTCM(PlotBase):
             try:
                 fig.add_trace(
                     go.Scatter(
-                        x=[self.eps_sm], y=[self.sigma_sr], name="Stress level"
+                        x=[self.eps_sm],
+                        y=[self.sigma_sr],
+                        name="Stress level",
                     )
                 )
 
@@ -338,6 +340,56 @@ class PlotMTCM(PlotBase):
                 yaxis_title=u"$w [mm]$",
                 template='plotly_dark',
                 xaxis_range=[0, self.fs_yield / self.Es],
+            )
+
+            fig.show()
+
+            # Save HTML
+            if save_html:
+                fig.write_html("crack_widths.html")
+
+# Plot mean strains vs. crack widths
+        if add_crackwidth_stress_plot:
+
+            fig = go.Figure()
+
+            fig.add_trace(
+                go.Scatter(
+                    x=self.df_mtcm['sigma_sr'],
+                    y=self.df_mtcm['wcr'],
+                    name='MTCM',
+                    # showlegend=False
+                )
+            )
+
+            if add_smtcm:
+                fig.add_trace(
+                    go.Scatter(
+                        x=self.df_smtcm['sigma_sr'],
+                        y=self.df_smtcm['wcr'],
+                        name='SMTCM',
+                        # showlegend=False
+                    )
+                )
+
+            try:
+                fig.add_trace(
+                    go.Scatter(
+                        x=[self.sigma_sr],
+                        y=[self.wcr],
+                        name="Crack width at stress level",
+                    )
+                )
+
+            except AttributeError:
+                None
+
+            fig.update_layout(
+                title="Crack widths",
+                xaxis_title=u"$\Sigma_sr MPa$",
+                yaxis_title=u"$w [mm]$",
+                template='plotly_dark',
+                xaxis_range=[0, self.fs_yield],
             )
 
             fig.show()
