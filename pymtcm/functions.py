@@ -302,7 +302,7 @@ def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
         i_ += 1
 
     # Mean bond stress
-    tau_m = abs(np.trapz(tau,xcoord)/(xcr0/2))
+    tau_m = abs(np.trapz(tau,xcoord)/(L/2))
     
     # Calculate crack widths
     u0_cllm = (eps_sr_cr**2/(2*gamma))**(1/beta)                                        # Eq. (50) Slip at the loaded end [mm]
