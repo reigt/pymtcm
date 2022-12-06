@@ -155,10 +155,15 @@ class PlotMTCM(PlotBase):
                     name=u"$\u03C4 [MPa]$",
                 )
             )
+            
+            if self.concept == 'CHLM':
+                L_tau_m = self.df['xcoord'][0]
+            else:
+                L_tau_m = self.Lt/2
 
             fig.add_trace(
                 go.Scatter(
-                    x=[0, self.Lt/2],
+                    x=[0, L_tau_m],
                     y=[self.tau_m, self.tau_m],
                     name=u"$\u03C4_{m} [MPa]$",
                 )
