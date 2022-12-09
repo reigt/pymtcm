@@ -141,7 +141,7 @@ class mtcm():
                 condition = 'Condition 2'
                 if eps_sr < eps_sr_S:
                     concept = 'CLLM'
-                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list), tau_m = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
+                    (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 elif eps_sr >= eps_sr_S:
                     concept = 'CHLM'
                     while eps_sr:
