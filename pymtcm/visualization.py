@@ -79,14 +79,14 @@ class PlotBase:
             self.alpha,
         )
 
-        # Calculate stresses
+        # Discretize strains
         eps_m_lt = np.linspace(eps_m_min, self.eps_sr_cr, 100)
         delta_eps_m_lt = eps_m_lt[1]-eps_m_lt[0]
         eps_m = np.append(eps_m_lt,np.linspace(self.eps_sr_cr+delta_eps_m_lt,eps_m_max))
 
         # Dictionary for MTCM
         mtcm_dict = {
-            'eps_m': eps_m,
+            'eps_m': [],
             'sigma_sr': [],
             'sigma_sr_nakedsteel': [],
             'Lt': [],
@@ -95,29 +95,43 @@ class PlotBase:
 
         # Lists for SMTCM
         smtcm_dict = {
-            'eps_m': eps_m,
+            'eps_m': [],
             'sigma_sr': [],
             'sigma_sr_nakedsteel': [],
             'Lt': [],
             'wcr': [],
         }
 
+        # MTCM
+        for eps in eps_m:
+
+            try:
+                mtmc_bar.strain(eps)
+            except UnboundLocalError:
+                continue
+            
+            # Parameters
+            mtcm_dict['eps_m'].append(eps)
+            mtcm_dict['sigma_sr'].append(mtmc_bar.sigma_sr)
+            mtcm_dict['Lt'].append(mtmc_bar.Lt)
+            mtcm_dict['wcr'].append(mtmc_bar.wcr)
+            
+            # Naked steel
+            (sigma_sr, sigma_sm, eps_sr) = functions.nakedsteel(
+                eps, self.Es, self.fs_yield, self.fs_ult, self.eps_ult
+            )
+            mtcm_dict['sigma_sr_nakedsteel'].append(sigma_sr)
+
+        # SMTCM
         for eps in eps_m:
 
             # Naked steel
             (sigma_sr, sigma_sm, eps_sr) = functions.nakedsteel(
                 eps, self.Es, self.fs_yield, self.fs_ult, self.eps_ult
             )
-
-            # MTCM
-            mtmc_bar.strain(eps)
-            mtcm_dict['sigma_sr'].append(mtmc_bar.sigma_sr)
-            mtcm_dict['Lt'].append(mtmc_bar.Lt)
-            mtcm_dict['wcr'].append(mtmc_bar.wcr)
-            mtcm_dict['sigma_sr_nakedsteel'].append(sigma_sr)
-
-            # SMTCM
+            
             smtmc_bar.strain(eps)
+            smtcm_dict['eps_m'].append(eps)
             smtcm_dict['sigma_sr'].append(smtmc_bar.sigma_sr)
             smtcm_dict['Lt'].append(smtmc_bar.Lt)
             smtcm_dict['wcr'].append(smtmc_bar.wcr)
