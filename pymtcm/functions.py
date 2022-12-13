@@ -319,7 +319,6 @@ def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,eps_sr_S,psi,tau_max,u1,alpha,xc
     Lt_cllm = 2*xr_cllm                                                                   # Transfer length [mm]
     wcr_cllm = Lt_cllm*(eps_sm_cllm-eps_cm_cllm)                                                    # Crack width [mm]
 
-    # Lt = xcr0                                                                      # Crack spacing [mm]    
     wcr = max(Lt*(eps_sm-eps_cm),wcr_cllm)                                                    # Crack width [mm]
 
     return (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m)
