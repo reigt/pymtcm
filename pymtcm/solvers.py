@@ -118,7 +118,7 @@ class mtcm():
             
         else:
             if eps_sr_S > self.eps_sr_cr:
-                condition = 'Condition 1'
+                condition = 'Regime 1 - Condition 1'
                 if eps_sr < self.eps_sr_cr:
                     concept = 'CLLM'
                     (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
@@ -132,20 +132,20 @@ class mtcm():
                     elif eps_sr >= eps_sr_S:
                         concept = 'CHLM'
                         while eps_sr:
-                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,eps_sr_S,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0,condition)
                             if eps_cm_cover_max >= self.eps_ctm:
                                 L_calc = L_calc/2
                             elif eps_cm_cover_max < self.eps_ctm:
                                 break
             elif eps_sr_S <= self.eps_sr_cr:
-                condition = 'Condition 2'
+                condition = 'Regime 1 - Condition 2'
                 if eps_sr < eps_sr_S:
                     concept = 'CLLM'
                     (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CLLM(eps_sr,self.delta,self.gamma,self.beta,self.xi,self.psi,self.Lc,self.tau_max,self.u1,self.alpha)
                 elif eps_sr >= eps_sr_S:
                     concept = 'CHLM'
                     while eps_sr:
-                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                        (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,eps_sr_S,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0,condition)
                         if eps_cm_cover_max >= self.eps_ctm:
                             L_calc = L_calc/2
                         elif eps_cm_cover_max < self.eps_ctm:
@@ -268,7 +268,7 @@ class mtcm():
                         for i_ in range(0,50):
                             eps_sr = eps_m/beta_sm
                             while eps_sr:
-                                (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                                (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,eps_sr_S,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0,condition)
                                 if eps_cm_cover_max >= self.eps_ctm:
                                     L_calc = L_calc/2
                                 elif eps_cm_cover_max < self.eps_ctm:
@@ -294,7 +294,7 @@ class mtcm():
                     for i_ in range(0,50):
                         eps_sr = eps_m/beta_sm
                         while eps_sr:
-                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0)
+                            (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m) = functions.CHLM(eps_sr,L_calc,self.delta,self.gamma,self.beta,self.xi,self.eps_sr_cr,eps_sr_S,self.psi,self.tau_max,self.u1,self.alpha,self.xcr0,condition)
                             if eps_cm_cover_max >= self.eps_ctm:
                                 L_calc = L_calc/2
                             elif eps_cm_cover_max < self.eps_ctm:

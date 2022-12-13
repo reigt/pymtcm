@@ -9,7 +9,7 @@ from .visualization import PlotMTCM
 from . import common
 
 # Version
-__version__ = '0.0.0a2'
+__version__ = '0.0.0a3'
 
 # Provide overview of public API
 __all__ = [
