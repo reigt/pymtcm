@@ -104,7 +104,7 @@ def CLLM_yield(eps_m,L,phi_s,rho_s,Es,Ecm,Esh,alpha_E,delta,gamma,beta,
     
     return (eps_sr, eps_sm, eps_cm, Lt, wcr)
         
-def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
+def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,eps_sr_S,psi,tau_max,u1,alpha,xcr0,condition):
     """Function comparatively heavily loaded member behaviour
     
     Args:    
@@ -305,14 +305,20 @@ def CHLM(eps_sr,L,delta,gamma,beta,xi,eps_sr_cr,psi,tau_max,u1,alpha,xcr0):
     tau_m = abs(np.trapz(tau,xcoord)/(L/2))
     
     # Calculate crack widths
-    u0_cllm = (eps_sr_cr**2/(2*gamma))**(1/beta)                                        # Eq. (50) Slip at the loaded end [mm]
-    xr_cllm = (1/delta)*(eps_sr_cr*(1/(2*gamma))**(1/(2*delta)))**(2*delta/beta)        # Eq. (51) Transfer length [mm]  
-    eps_sm_cllm = ((xi*eps_sr_cr*xr_cllm+u0_cllm)/(1+xi))/xr_cllm                                      # Mean steel strains over bar length
-    eps_cm_cllm = (psi*xi*(eps_sr_cr*xr_cllm-u0_cllm)/(1+xi))/xr_cllm                                  # Mean steel strains over bar length
+    if condition == 'Regime 1 - Condition 2':
+        eps_sr_cllm = eps_sr_S
+        Lt = L
+    else:
+        eps_sr_cllm = eps_sr_cr
+        Lt = xcr0
+
+    u0_cllm = (eps_sr_cllm**2/(2*gamma))**(1/beta)                                        # Eq. (50) Slip at the loaded end [mm]
+    xr_cllm = (1/delta)*(eps_sr_cllm*(1/(2*gamma))**(1/(2*delta)))**(2*delta/beta)        # Eq. (51) Transfer length [mm]  
+    eps_sm_cllm = ((xi*eps_sr_cllm*xr_cllm+u0_cllm)/(1+xi))/xr_cllm                                      # Mean steel strains over bar length
+    eps_cm_cllm = (psi*xi*(eps_sr_cllm*xr_cllm-u0_cllm)/(1+xi))/xr_cllm                                  # Mean steel strains over bar length
     Lt_cllm = 2*xr_cllm                                                                   # Transfer length [mm]
     wcr_cllm = Lt_cllm*(eps_sm_cllm-eps_cm_cllm)                                                    # Crack width [mm]
 
-    Lt = xcr0                                                                      # Crack spacing [mm]    
     wcr = max(Lt*(eps_sm-eps_cm),wcr_cllm)                                                    # Crack width [mm]
 
     return (u0, u0, eps_sm, eps_cm, eps_cm_cover_max, Lt, wcr, xcoord, u, tau, eps_s, eps_c, eps_sm_list, eps_cm_list, tau_m)
